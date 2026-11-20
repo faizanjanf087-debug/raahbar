@@ -61,7 +61,48 @@ function loadTab(name) {
   if (name === "history") loadHistory();
   if (name === "settings") loadSettings();
   if (name === "tasks") loadTasks();
+  if (name === "usage") loadUsage();
+  if (name === "models") loadModels();
   if (name === "audit") loadAudit();
+}
+
+// ---------- usage ----------
+async function loadUsage() {
+  const data = await getJSON("/api/usage");
+  const box = $("#usage-cards");
+  box.innerHTML = "";
+  const totalTokens = data.total.reduce((s, r) => s + (r.tokens_in || 0) + (r.tokens_out || 0), 0);
+  const summary = document.createElement("div");
+  summary.className = "card";
+  summary.innerHTML = `<strong>Kul tokens:</strong> ${totalTokens.toLocaleString()}`;
+  box.appendChild(summary);
+  if (!data.total.length) {
+    box.insertAdjacentHTML("beforeend", '<p class="hint">Abhi koi usage record nahi.</p>');
+  }
+  data.total.forEach((r) => {
+    const div = document.createElement("div");
+    div.className = "card";
+    const total = (r.tokens_in || 0) + (r.tokens_out || 0);
+    const day = data.last_24h.find((d) => d.model === r.model);
+    div.innerHTML = `<strong>${r.model}</strong> (${r.provider})<br>
+      Calls: ${r.calls} &middot; Input: ${r.tokens_in || 0} &middot; Output: ${r.tokens_out || 0} &middot; Total: ${total}<br>
+      <span class="hint">Pichle 24 ghante: ${day ? day.tokens : 0} tokens</span>`;
+    box.appendChild(div);
+  });
+}
+
+// ---------- profile & models ----------
+async function loadModels() {
+  const data = await getJSON("/api/models");
+  const box = $("#models-list");
+  box.innerHTML = "";
+  Object.entries(data).forEach(([key, info]) => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `<strong>${key}</strong>: <code>${info.setting}</code><br>
+      <span class="hint">${info.purpose}</span>`;
+    box.appendChild(div);
+  });
 }
 
 // ---------- chat ----------

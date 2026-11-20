@@ -1,6 +1,7 @@
 import requests
 
 import config
+from memory import store
 
 URL = "https://api.deepseek.com/chat/completions"
 
@@ -15,4 +16,7 @@ def chat(messages, model):
         timeout=120,
     )
     response.raise_for_status()
-    return response.json()["choices"][0]["message"]["content"]
+    data = response.json()
+    usage = data.get("usage") or {}
+    store.log_usage("deepseek", model, usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0))
+    return data["choices"][0]["message"]["content"]

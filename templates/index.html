@@ -21,6 +21,8 @@
         <button data-tab="vps">VPS</button>
         <button data-tab="approvals">Approvals <span id="pending-count"></span></button>
         <button data-tab="history">History</button>
+        <button data-tab="usage">Usage</button>
+        <button data-tab="models">Profile &amp; Models</button>
         <button data-tab="settings">Settings</button>
         <button data-tab="tasks">Scheduled tasks</button>
         <button data-tab="audit">Audit log</button>
@@ -142,6 +144,20 @@
           <button type="submit">Task add karein</button>
         </form>
         <div id="tasks-list"></div>
+      </section>
+
+      <!-- USAGE -->
+      <section id="tab-usage" class="tab">
+        <h3>Usage</h3>
+        <p class="hint">Tokens ka hisab DeepSeek aur Gemini ke jawab se hota hai.</p>
+        <div id="usage-cards"></div>
+      </section>
+
+      <!-- PROFILE & MODELS -->
+      <section id="tab-models" class="tab">
+        <h3>Profile &amp; Models</h3>
+        <p class="hint">Har kaam ke liye kaun sa model use ho raha hai. Badalne ke liye Settings tab kholein.</p>
+        <div id="models-list"></div>
       </section>
 
       <!-- AUDIT -->

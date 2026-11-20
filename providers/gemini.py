@@ -3,6 +3,7 @@ import base64
 import requests
 
 import config
+from memory import store
 
 
 def analyze(data, mime_type, prompt, model):
@@ -32,5 +33,8 @@ def analyze(data, mime_type, prompt, model):
         timeout=180,
     )
     response.raise_for_status()
-    parts = response.json()["candidates"][0]["content"]["parts"]
+    data = response.json()
+    meta = data.get("usageMetadata") or {}
+    store.log_usage("gemini", model, meta.get("promptTokenCount", 0), meta.get("candidatesTokenCount", 0))
+    parts = data["candidates"][0]["content"]["parts"]
     return "".join(part.get("text", "") for part in parts)

@@ -45,6 +45,33 @@ def init():
     _run(
         f"CREATE TABLE IF NOT EXISTS messages (id {id_column}, role TEXT, content TEXT, created DOUBLE PRECISION)"
     )
+    _run(
+        f"CREATE TABLE IF NOT EXISTS usage (id {id_column}, created DOUBLE PRECISION, provider TEXT, "
+        "model TEXT, tokens_in INTEGER, tokens_out INTEGER)"
+    )
+
+
+def log_usage(provider, model, tokens_in, tokens_out):
+    _run(
+        "INSERT INTO usage (created, provider, model, tokens_in, tokens_out) VALUES (%s, %s, %s, %s, %s)",
+        (time.time(), provider, model, int(tokens_in or 0), int(tokens_out or 0)),
+    )
+
+
+def usage_summary():
+    """Har model ke liye kul tokens, aur pichle 24 ghante ke tokens."""
+    day_ago = time.time() - 86400
+    total = _run(
+        "SELECT provider, model, COUNT(*) AS calls, SUM(tokens_in) AS tokens_in, "
+        "SUM(tokens_out) AS tokens_out FROM usage GROUP BY provider, model ORDER BY provider, model",
+        fetch="all",
+    )
+    today = _run(
+        "SELECT model, SUM(tokens_in + tokens_out) AS tokens FROM usage WHERE created >= %s GROUP BY model",
+        (day_ago,),
+        fetch="all",
+    )
+    return {"total": total, "last_24h": today}
 
 
 def add(role, content):

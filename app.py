@@ -219,6 +219,25 @@ def tasks_delete(task_id):
     return jsonify({"removed": task_id})
 
 
+@app.route("/api/usage")
+@login_required
+def usage():
+    return jsonify(store.usage_summary())
+
+
+@app.route("/api/models")
+@login_required
+def models_map():
+    s = settings_store.load()
+    return jsonify({
+        "chat": {"setting": s["chat_model"], "purpose": "Chat aur sawal-jawab (Auto ho to DeepSeek chunta hai)"},
+        "reasoning": {"setting": "deepseek-v4-pro", "purpose": "Mushkil logic aur tajziya (Auto mein)"},
+        "code": {"setting": "deepseek-flash", "purpose": "Code aur scripts (Auto mein)"},
+        "image": {"setting": s["gemini_model"], "purpose": "Image, video aur file samajhna (Gemini)"},
+        "voice": {"setting": s["elevenlabs_model"], "purpose": "Voice ka jawab aur MP3 (ElevenLabs)"},
+    })
+
+
 @app.route("/api/voices")
 @login_required
 def voices():
