@@ -20,7 +20,10 @@ VPS_PATH = os.path.join(DATA_DIR, "vps.json")
 SETTINGS_PATH = os.path.join(DATA_DIR, "settings.json")
 AUDIT_PATH = os.path.join(DATA_DIR, "audit.log")
 
-# Model IDs ko provider ki official docs se verify karke yahan update karein.
-DEEPSEEK_MODELS = ["deepseek-v4-flash", "deepseek-chat", "deepseek-reasoner"]
-GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"]
-ELEVENLABS_MODELS = ["eleven_multilingual_v2", "eleven_turbo_v2_5"]
+# Model IDs: official docs se 2026-11 mein check kiye gaye (api-docs.deepseek.com, ai.google.dev).
+# deepseek-chat, deepseek-reasoner aur deepseek-coder band ho chuke hain, is liye list mein nahi.
+# Naye model aane par yahin update karein.
+DEEPSEEK_MODELS = ["deepseek-flash", "deepseek-v4-pro"]
+GEMINI_MODELS = ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-4-argon"]
+GEMINI_IMAGE_MODELS = ["gemini-3.1-flash-image", "gemini-3-pro-image", "gemini-nano-banana-2.1"]
+ELEVENLABS_MODELS = ["eleven_multilingual_v2", "eleven_turbo_v2_5"]  # ye bhi docs se verify karein

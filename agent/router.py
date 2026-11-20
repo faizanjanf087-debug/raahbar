@@ -1,17 +1,17 @@
 """Auto mode: DeepSeek khud decide karta hai ke ye message kis model se jaye.
 
-general   -> chat ka default model
-code      -> coder model (code, scripts, debugging)
-reasoning -> reasoner model (mushkil logic, tajziya, plan)
+general   -> deepseek-flash (tez, sasta, roz ke kaam)
+code      -> deepseek-flash (coder ka alag model 2026-11 mein maujood nahi)
+reasoning -> deepseek-v4-pro (mushkil logic, tajziya, plan)
 
-Model IDs ko DeepSeek ki official docs se verify karein.
+Model IDs docs se check kiye gaye hain. Badle to config.py mein update karein.
 """
 from providers import deepseek
 
 ROUTES = {
-    "general": "deepseek-v4-flash",
-    "code": "deepseek-coder",
-    "reasoning": "deepseek-reasoner",
+    "general": "deepseek-flash",
+    "code": "deepseek-flash",
+    "reasoning": "deepseek-v4-pro",
 }
 
 ROUTER_PROMPT = (
