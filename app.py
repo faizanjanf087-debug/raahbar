@@ -123,7 +123,8 @@ def approvals_list():
 @login_required
 def approvals_decide(approval_id):
     approve = bool((request.json or {}).get("approve"))
-    item = approvals.decide(approval_id, approve)
+    timeout = settings_store.load()["approval_timeout"]
+    item = approvals.decide(approval_id, approve, timeout)
     if not item:
         return jsonify({"error": "approval nahi mili ya already decide ho chuki"}), 404
     if approve and item["action"] == "run_command":

@@ -28,9 +28,12 @@ def get(approval_id):
     return _pending.get(approval_id)
 
 
-def decide(approval_id, approve):
+def decide(approval_id, approve, timeout=300):
     item = _pending.get(approval_id)
     if not item or item["status"] != "pending":
+        return None
+    if time.time() - item["created"] > timeout:
+        item["status"] = "expired"
         return None
     item["status"] = "approved" if approve else "denied"
     return item
