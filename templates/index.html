@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ur">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Raahbar</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <h2>Agent</h2>
+      <nav>
+        <button data-tab="chat" class="active">Chat</button>
+        <button data-tab="live">Live Call</button>
+        <button data-tab="vps">VPS</button>
+        <button data-tab="approvals">Approvals <span id="pending-count"></span></button>
+        <button data-tab="history">History</button>
+        <button data-tab="settings">Settings</button>
+        <button data-tab="audit">Audit log</button>
+      </nav>
+    </aside>
+
+    <main>
+      <!-- CHAT -->
+      <section id="tab-chat" class="tab active">
+        <div id="chat-log" class="chat-log"></div>
+        <div class="chat-input">
+          <button id="mention-btn" type="button" title="Pichli baat mention karein">@</button>
+          <input type="file" id="file-input" accept="image/*,audio/*,video/*" hidden>
+          <button id="attach-btn" type="button" title="File upload">+</button>
+          <textarea id="chat-text" rows="2" placeholder="Message likhein..."></textarea>
+          <button id="send-btn" type="button">Send</button>
+        </div>
+        <div id="mention-list" class="mention-list hidden"></div>
+      </section>
+
+      <!-- LIVE CALL -->
+      <section id="tab-live" class="tab">
+        <div class="live-card">
+          <h3>Live call</h3>
+          <p id="live-status">Ruka hua</p>
+          <video id="camera" autoplay muted playsinline class="hidden"></video>
+          <div class="live-controls">
+            <button id="live-start" type="button">Call shuru karein</button>
+            <button id="live-mute" type="button" disabled>Mute</button>
+            <button id="live-camera" type="button" disabled>Camera on</button>
+            <button id="live-snapshot" type="button" disabled>Snapshot bhejein</button>
+            <button id="live-end" type="button" disabled>Call khatam</button>
+          </div>
+          <p class="hint">Hold karein: mic dabaa ke bolein, chhod dein to jawab aayega.</p>
+          <button id="live-ptt" type="button" disabled class="ptt">Hold to talk</button>
+          <div id="live-transcript" class="live-transcript"></div>
+        </div>
+      </section>
+
+      <!-- VPS -->
+      <section id="tab-vps" class="tab">
+        <h3>VPS list</h3>
+        <div id="vps-list"></div>
+        <h4>Naya VPS add karein</h4>
+        <form id="vps-form" class="form">
+          <input name="name" placeholder="Naam (jaise Main VPS)" required>
+          <input name="host" placeholder="IP ya hostname" required>
+          <input name="user" placeholder="User (default root)" value="root">
+          <textarea name="private_key" rows="6" placeholder="Private SSH key (paste karein, yahan save hogi encrypted)" required></textarea>
+          <button type="submit">Add VPS</button>
+        </form>
+      </section>
+
+      <!-- APPROVALS -->
+      <section id="tab-approvals" class="tab">
+        <h3>Approvals</h3>
+        <div id="approvals-list"></div>
+      </section>
+
+      <!-- HISTORY -->
+      <section id="tab-history" class="tab">
+        <h3>History</h3>
+        <div class="row">
+          <button data-scope="hour" class="del-btn">Pichle 1 ghante delete</button>
+          <button data-scope="day" class="del-btn">Pichle 1 din delete</button>
+          <button data-scope="all" class="del-btn danger">Sab delete</button>
+        </div>
+        <div id="history-list"></div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="tab-settings" class="tab">
+        <h3>Settings</h3>
+        <form id="settings-form" class="form">
+          <label>Profile naam <input name="profile_name"></label>
+          <label>DeepSeek model
+            <select name="deepseek_model">
+              {% for m in deepseek_models %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+            </select>
+          </label>
+          <label>Gemini model (images, media)
+            <select name="gemini_model">
+              {% for m in gemini_models %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+            </select>
+          </label>
+          <label>ElevenLabs model
+            <select name="elevenlabs_model">
+              {% for m in elevenlabs_models %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+            </select>
+          </label>
+          <label>Voice <select name="elevenlabs_voice_id" id="voice-select"></select></label>
+          <label>Approval timeout (seconds) <input name="approval_timeout" type="number" min="30"></label>
+          <label><input type="checkbox" name="live_auto_speak"> Jawab bolkar sunayein</label>
+          <button type="submit">Save</button>
+          <p id="settings-msg" class="hint"></p>
+        </form>
+      </section>
+
+      <!-- AUDIT -->
+      <section id="tab-audit" class="tab">
+        <h3>Audit log</h3>
+        <pre id="audit-log" class="audit"></pre>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
