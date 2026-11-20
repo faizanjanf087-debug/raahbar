@@ -31,9 +31,15 @@ def handle(user_text):
         return _request_command(vps_id, command)
 
     if text.startswith("/browse "):
-        url = text.split(maxsplit=1)[1].strip()
-        page = browser.read_page(url, screenshot=False)
-        return f"{page['title']}\n\n{page['text']}"
+        rest = text.split(maxsplit=1)[1].strip()
+        want_shot = rest.endswith("--shot")
+        url = rest.replace("--shot", "").strip()
+        page = browser.read_page(url, screenshot=want_shot)
+        reply = f"{page['title']}\n\n{page['text']}"
+        if page["screenshot"]:
+            name = page["screenshot"].rsplit("/", 1)[-1]
+            reply += f"\n\nScreenshot: /api/screenshots/{name}"
+        return reply
 
     if text.startswith("/act "):
         return _request_browser_action(text)
@@ -44,26 +50,41 @@ def handle(user_text):
     return _ask_model(text, settings)
 
 
+USAGE_ACT = (
+    "Istemaal: /act <url> | click | <selector>\n"
+    "ya: /act <url> | type | <selector> | <text>\n"
+    "Kai steps ek saath: /act <url> | click | <sel> ;; type | <sel> | <text> ;; click | <sel>\n"
+    "Password kabhi type na karein, wo khud daalein."
+)
+
+
 def _request_browser_action(text):
-    # /act <url> | click | <selector>
-    # /act <url> | type | <selector> | <text>
-    parts = [p.strip() for p in text[len("/act "):].split("|")]
-    if len(parts) < 3 or parts[1] not in ("click", "type"):
-        return (
-            "Istemaal: /act <url> | click | <selector>\n"
-            "ya: /act <url> | type | <selector> | <text>\n"
-            "Password kabhi type na karein, wo khud daalein."
-        )
-    url, kind, selector = parts[0], parts[1], parts[2]
-    step = {"action": kind, "selector": selector}
-    if kind == "type":
-        if len(parts) < 4:
-            return "type ke liye text bhi dein."
-        step["text"] = parts[3]
+    # ;; se steps alag hote hain. Pehle step mein pehla hissa URL hai.
+    chunks = [c.strip() for c in text[len("/act "):].split(";;") if c.strip()]
+    if not chunks:
+        return USAGE_ACT
+    url = chunks[0].split("|")[0].strip()
+    steps = []
+    for index, chunk in enumerate(chunks):
+        parts = [p.strip() for p in chunk.split("|")]
+        if index == 0:
+            parts = parts[1:]  # URL hata do
+        if len(parts) < 2 or parts[0] not in ("click", "type"):
+            return USAGE_ACT
+        kind, selector = parts[0], parts[1]
+        step = {"action": kind, "selector": selector}
+        if kind == "type":
+            if len(parts) < 3:
+                return "type ke liye text bhi dein.\n" + USAGE_ACT
+            step["text"] = parts[2]
+        steps.append(step)
     browser.check_url(url)
-    item = approvals.create("browser_actions", {"url": url, "actions": [step]})
-    audit.log("browser_action_requested", approval=item["id"], url=url, action=kind)
-    return f"Approval chahiye (id: {item['id']}). Approvals tab mein dekh kar confirm karein."
+    item = approvals.create("browser_actions", {"url": url, "actions": steps})
+    audit.log("browser_action_requested", approval=item["id"], url=url, steps=len(steps))
+    return (
+        f"{len(steps)} step(s) ke liye approval chahiye (id: {item['id']}). "
+        "Approvals tab mein dekh kar confirm karein."
+    )
 
 
 def _vps_list():

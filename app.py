@@ -150,6 +150,15 @@ def audit_view():
     return jsonify(audit.tail(100))
 
 
+@app.route("/api/screenshots/<name>")
+@login_required
+def screenshot(name):
+    from flask import send_from_directory
+    if "/" in name or ".." in name:
+        return jsonify({"error": "galat naam"}), 400
+    return send_from_directory(browser.SHOTS_DIR, name)
+
+
 @app.route("/api/tasks", methods=["GET", "POST"])
 @login_required
 def tasks():

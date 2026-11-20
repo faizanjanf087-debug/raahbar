@@ -22,7 +22,7 @@ Replit par: Secrets mein same keys daalein, aur Run dabaayein.
 - **History:** pichla 1 ghanta, 1 din, ya sab delete.
 - **Settings:** DeepSeek, Gemini, ElevenLabs models aur voice.
 - **Audit log:** har important action ka record.
-- **Browser:** `/browse <url>` page ka text nikalta hai (read-only). `/act <url> | click | <selector>` ya `/act <url> | type | <selector> | <text>` har step ke liye approval maangta hai. Password fields par agent kaam nahi karta, login aap khud karein.
+- **Browser:** `/browse <url>` page ka text nikalta hai (read-only). `/browse <url> --shot` screenshot bhi leta hai, jo `/api/screenshots/<name>` par milta hai. `/act <url> | click | <selector>` ya `/act <url> | type | <selector> | <text>` se action hota hai. Kai steps ke liye `;;` se alag karein. Ek approval poore batch par lagti hai. Password fields par agent kaam nahi karta, login aap khud karein.
 - **Scheduled tasks:** `/schedule add <minutes> <command>`, `/schedule list`, `/schedule remove <id>`. Ya Scheduled tasks tab se. Sirf read-only kaam schedule hote hain.
 - **Hands-free live call:** Live Call mein "Hands-free" on karein. Awaaz ruk jaye to message khud bheja jaata hai (simple VAD).
 - **PWA:** browser mein "Add to Home Screen" karke app ki tarah khul sakta hai (manifest aur service worker).
@@ -44,7 +44,7 @@ playwright install chromium
 ## Abhi kya adhoora hai
 
 - Live call full-duplex nahi hai. Hands-free simple VAD hai, real-time streaming nahi.
-- Browser automation ek step ek approval se chalta hai. Multi-step flow aur screenshot approval card ka kaam agle version mein.
+- Browser actions ke liye screenshot approval card abhi nahi hai. Abhi approval ke baad result text mein aata hai.
 - Browser profile (cookies) data/browser_profile mein rehti hai. Ise Replit par persist karne ke liye Replit storage ka dhyan rakhein.
 - Gemini "live" mode ka real-time streaming abhi shamil nahi.
 - Video ko frames mein tod kar analyze karna abhi nahi hai. Chhoti video seedha Gemini ko jaati hai (20MB tak).
