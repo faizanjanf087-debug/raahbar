@@ -5,7 +5,7 @@ from flask import Flask, jsonify, render_template, request, session
 
 import config
 import settings_store
-from agent import planner, scheduler
+from agent import browser, planner, scheduler
 from memory import store
 from providers import deepseek, elevenlabs, gemini
 from security import approvals, audit
@@ -131,6 +131,15 @@ def approvals_decide(approval_id):
         result = ssh.run(detail["vps"], detail["command"])
         audit.log("command_ran", vps=detail["vps"], command=detail["command"], exit_code=result["exit_code"])
         return jsonify({"status": item["status"], "result": result})
+    if approve and item["action"] == "browser_actions":
+        detail = item["detail"]
+        try:
+            res = browser.run_actions(detail["url"], detail["actions"])
+        except Exception as exc:
+            audit.log("browser_action_failed", approval_id=approval_id, error=str(exc))
+            return jsonify({"status": item["status"], "error": str(exc)}), 400
+        body = "\n".join(res["steps"]) + f"\n\n{res['title']}\n{res['text']}"
+        return jsonify({"status": item["status"], "result": {"stdout": body, "stderr": "", "exit_code": 0}})
     audit.log("approval_decided", approval_id=approval_id, approved=approve)
     return jsonify({"status": item["status"]})
 

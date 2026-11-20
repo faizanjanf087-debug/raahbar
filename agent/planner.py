@@ -35,10 +35,35 @@ def handle(user_text):
         page = browser.read_page(url, screenshot=False)
         return f"{page['title']}\n\n{page['text']}"
 
+    if text.startswith("/act "):
+        return _request_browser_action(text)
+
     if text.startswith("/schedule"):
         return _schedule_command(text)
 
     return _ask_model(text, settings)
+
+
+def _request_browser_action(text):
+    # /act <url> | click | <selector>
+    # /act <url> | type | <selector> | <text>
+    parts = [p.strip() for p in text[len("/act "):].split("|")]
+    if len(parts) < 3 or parts[1] not in ("click", "type"):
+        return (
+            "Istemaal: /act <url> | click | <selector>\n"
+            "ya: /act <url> | type | <selector> | <text>\n"
+            "Password kabhi type na karein, wo khud daalein."
+        )
+    url, kind, selector = parts[0], parts[1], parts[2]
+    step = {"action": kind, "selector": selector}
+    if kind == "type":
+        if len(parts) < 4:
+            return "type ke liye text bhi dein."
+        step["text"] = parts[3]
+    browser.check_url(url)
+    item = approvals.create("browser_actions", {"url": url, "actions": [step]})
+    audit.log("browser_action_requested", approval=item["id"], url=url, action=kind)
+    return f"Approval chahiye (id: {item['id']}). Approvals tab mein dekh kar confirm karein."
 
 
 def _vps_list():
