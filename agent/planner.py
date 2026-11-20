@@ -1,3 +1,4 @@
+from agent import browser
 from memory import store
 from providers import deepseek
 from security import approvals, audit, policy
@@ -5,7 +6,7 @@ from settings_store import load as load_settings
 from vps import registry, ssh, status as vps_status
 
 SYSTEM_PROMPT = (
-    "Tum mere personal assistant ho. Roman Urdu mein jawab do. "
+    "Tum Raahbar ho, mere personal assistant. Roman Urdu mein jawab do. "
     "Tum sirf wahi kaam batao jo user ne maangay hain. "
     "VPS par commands sirf user ke approval ke baad chalte hain."
 )
@@ -27,7 +28,15 @@ def handle(user_text):
         if len(parts) < 3:
             return "Istemaal: /run <vps_id> <command>"
         _, vps_id, command = parts
-        return _request_command(vps_id, command, settings)
+        return _request_command(vps_id, command)
+
+    if text.startswith("/browse "):
+        url = text.split(maxsplit=1)[1].strip()
+        page = browser.read_page(url, screenshot=False)
+        return f"{page['title']}\n\n{page['text']}"
+
+    if text.startswith("/schedule"):
+        return _schedule_command(text)
 
     return _ask_model(text, settings)
 
@@ -40,7 +49,7 @@ def _vps_list():
     return "Aap ke VPS:\n" + "\n".join(lines)
 
 
-def _request_command(vps_id, command, settings):
+def _request_command(vps_id, command):
     level = policy.classify(command)
     audit.log("command_requested", vps=vps_id, command=command, level=level)
     if level == "blocked":
@@ -50,10 +59,27 @@ def _request_command(vps_id, command, settings):
         audit.log("command_ran", vps=vps_id, command=command, exit_code=result["exit_code"])
         return _format_result(result)
     item = approvals.create("run_command", {"vps": vps_id, "command": command})
-    return (
-        f"Approval chahiye (id: {item['id']}). "
-        "Approvals tab mein dekh kar confirm karein."
-    )
+    return f"Approval chahiye (id: {item['id']}). Approvals tab mein dekh kar confirm karein."
+
+
+def _schedule_command(text):
+    # /schedule list | /schedule add <minutes> <command> | /schedule remove <id>
+    from agent import scheduler
+    parts = text.split(maxsplit=3)
+    if len(parts) == 1 or parts[1] == "list":
+        items = scheduler.list_tasks()
+        if not items:
+            return "Koi scheduled task nahi."
+        return "\n".join(
+            f"- {t['id']} | har {t['interval_minutes']} min | {t['command']}" for t in items
+        )
+    if parts[1] == "add" and len(parts) == 4:
+        item = scheduler.add_task(f"task-{len(scheduler.list_tasks()) + 1}", parts[3], parts[2])
+        return f"Task add ho gaya (id: {item['id']})."
+    if parts[1] == "remove" and len(parts) >= 3:
+        scheduler.remove_task(parts[2])
+        return "Task remove ho gaya."
+    return "Istemaal: /schedule list | /schedule add <minutes> <command> | /schedule remove <id>"
 
 
 def _format_result(result):

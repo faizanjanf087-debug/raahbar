@@ -46,6 +46,7 @@ function loadTab(name) {
   if (name === "approvals") loadApprovals();
   if (name === "history") loadHistory();
   if (name === "settings") loadSettings();
+  if (name === "tasks") loadTasks();
   if (name === "audit") loadAudit();
 }
 
@@ -194,8 +195,8 @@ $("#live-snapshot").addEventListener("click", async () => {
 
 const ptt = $("#live-ptt");
 async function startTalk(e) {
-  e.preventDefault();
-  if (!stream || muted) return;
+  if (e) e.preventDefault();
+  if (!stream || muted || (recorder && recorder.state === "recording")) return;
   chunks = [];
   recorder = new MediaRecorder(stream);
   recorder.ondataavailable = (ev) => chunks.push(ev.data);
@@ -231,7 +232,55 @@ ptt.addEventListener("mouseup", stopTalk);
 ptt.addEventListener("mouseleave", stopTalk);
 ptt.addEventListener("touchend", stopTalk);
 
+// Hands-free: awaaz ki level dekh kar khud bolna shuru/band hota hai (simple VAD)
+let vadTimer = null;
+let vadCtx = null;
+function startHandsFree() {
+  vadCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const source = vadCtx.createMediaStreamSource(stream);
+  const analyser = vadCtx.createAnalyser();
+  analyser.fftSize = 512;
+  source.connect(analyser);
+  const data = new Uint8Array(analyser.fftSize);
+  const SPEECH_LEVEL = 0.04;   // is se upar awaaz = bol rahe hain
+  const SILENCE_MS = 1200;     // itni khamoshi ke baad message bheja jaye
+  let silentSince = null;
+
+  vadTimer = setInterval(() => {
+    if (muted) return;
+    analyser.getByteTimeDomainData(data);
+    let sum = 0;
+    for (const v of data) {
+      const n = (v - 128) / 128;
+      sum += n * n;
+    }
+    const rms = Math.sqrt(sum / data.length);
+    if (rms > SPEECH_LEVEL) {
+      silentSince = null;
+      startTalk();
+    } else if (recorder && recorder.state === "recording") {
+      if (silentSince === null) silentSince = Date.now();
+      if (Date.now() - silentSince > SILENCE_MS) {
+        silentSince = null;
+        stopTalk();
+      }
+    }
+  }, 100);
+}
+
+function stopHandsFree() {
+  if (vadTimer) clearInterval(vadTimer);
+  vadTimer = null;
+  if (vadCtx) vadCtx.close();
+  vadCtx = null;
+}
+
+$("#live-start").addEventListener("click", () => {
+  if ($("#live-handsfree").checked && stream) startHandsFree();
+});
+
 $("#live-end").addEventListener("click", () => {
+  stopHandsFree();
   if (stream) stream.getTracks().forEach((t) => t.stop());
   if (cameraOn) $("#camera").srcObject = null;
   stream = null;
@@ -375,6 +424,45 @@ $("#settings-form").addEventListener("submit", async (e) => {
   $("#settings-msg").textContent = "Save ho gaya.";
 });
 
+// ---------- scheduled tasks ----------
+async function loadTasks() {
+  const items = await getJSON("/api/tasks");
+  const box = $("#tasks-list");
+  box.innerHTML = "";
+  if (!items.length) box.innerHTML = '<p class="hint">Abhi koi task nahi.</p>';
+  items.forEach((t) => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `<strong>${t.name}</strong> — har ${t.interval_minutes} min<br>
+      <code>${t.command}</code>
+      <pre>${t.last_result ? t.last_result : "abhi tak nahi chala"}</pre>
+      <div class="actions"><button class="danger">Remove</button></div>`;
+    div.querySelector("button").addEventListener("click", async () => {
+      if (!confirm(`${t.name} remove karein?`)) return;
+      await api(`/api/tasks/${t.id}`, { method: "DELETE" });
+      loadTasks();
+    });
+    box.appendChild(div);
+  });
+}
+
+$("#task-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  try {
+    await postJSON("/api/tasks", {
+      name: form.name.value,
+      command: form.command.value,
+      interval_minutes: Number(form.interval_minutes.value),
+    });
+    form.reset();
+    form.interval_minutes.value = 60;
+  } catch (err) {
+    alert(err.message);
+  }
+  loadTasks();
+});
+
 // ---------- audit ----------
 async function loadAudit() {
   const items = await getJSON("/api/audit");
@@ -393,3 +481,7 @@ setInterval(() => {
 getJSON("/api/history?limit=50").then((items) => {
   items.forEach((item) => addMessage(item.role, item.content));
 }).catch(() => {});
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/static/sw.js").catch(() => {});
+}

@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Raahbar</title>
   <link rel="stylesheet" href="/static/style.css">
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#5b8cff">
 </head>
 <body>
   <div class="layout">
@@ -17,6 +19,7 @@
         <button data-tab="approvals">Approvals <span id="pending-count"></span></button>
         <button data-tab="history">History</button>
         <button data-tab="settings">Settings</button>
+        <button data-tab="tasks">Scheduled tasks</button>
         <button data-tab="audit">Audit log</button>
       </nav>
     </aside>
@@ -49,6 +52,7 @@
             <button id="live-end" type="button" disabled>Call khatam</button>
           </div>
           <p class="hint">Hold karein: mic dabaa ke bolein, chhod dein to jawab aayega.</p>
+          <label class="hint"><input type="checkbox" id="live-handsfree"> Hands-free (bolna shuru karein to khud sunay)</label>
           <button id="live-ptt" type="button" disabled class="ptt">Hold to talk</button>
           <div id="live-transcript" class="live-transcript"></div>
         </div>
@@ -111,6 +115,19 @@
           <button type="submit">Save</button>
           <p id="settings-msg" class="hint"></p>
         </form>
+      </section>
+
+      <!-- SCHEDULED TASKS -->
+      <section id="tab-tasks" class="tab">
+        <h3>Scheduled tasks</h3>
+        <p class="hint">Sirf read-only kaam schedule hote hain: /browse, /status, aur read-level /run.</p>
+        <form id="task-form" class="form">
+          <input name="name" placeholder="Task ka naam" required>
+          <input name="command" placeholder="jaise /browse https://example.com" required>
+          <input name="interval_minutes" type="number" min="5" value="60" required>
+          <button type="submit">Task add karein</button>
+        </form>
+        <div id="tasks-list"></div>
       </section>
 
       <!-- AUDIT -->

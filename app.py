@@ -5,7 +5,7 @@ from flask import Flask, jsonify, render_template, request, session
 
 import config
 import settings_store
-from agent import planner
+from agent import planner, scheduler
 from memory import store
 from providers import deepseek, elevenlabs, gemini
 from security import approvals, audit
@@ -141,6 +141,28 @@ def audit_view():
     return jsonify(audit.tail(100))
 
 
+@app.route("/api/tasks", methods=["GET", "POST"])
+@login_required
+def tasks():
+    if request.method == "POST":
+        data = request.json or {}
+        try:
+            item = scheduler.add_task(
+                data.get("name", "task"), data["command"], data.get("interval_minutes", 60)
+            )
+        except (ValueError, KeyError) as exc:
+            return jsonify({"error": str(exc)}), 400
+        return jsonify(item)
+    return jsonify(scheduler.list_tasks())
+
+
+@app.route("/api/tasks/<task_id>", methods=["DELETE"])
+@login_required
+def tasks_delete(task_id):
+    scheduler.remove_task(task_id)
+    return jsonify({"removed": task_id})
+
+
 @app.route("/api/voices")
 @login_required
 def voices():
@@ -184,6 +206,8 @@ def media():
     store.add("assistant", answer)
     return jsonify({"reply": answer})
 
+
+scheduler.start()
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "8080"))
