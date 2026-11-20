@@ -5,7 +5,7 @@ import config
 
 DEFAULTS = {
     "profile_name": "Owner",
-    "deepseek_model": config.DEEPSEEK_MODELS[0],
+    "chat_model": "auto",  # "auto" ya koi DeepSeek model ID
     "gemini_model": config.GEMINI_MODELS[0],
     "elevenlabs_model": config.ELEVENLABS_MODELS[0],
     "elevenlabs_voice_id": "",

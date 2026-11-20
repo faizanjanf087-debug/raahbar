@@ -20,7 +20,10 @@ Replit par: Secrets mein same keys daalein, aur Run dabaayein.
 - **Commands:** `/run <vps_id> <command>` pehle approval maangti hai. Blocked commands kabhi nahi chalte.
 - **Approvals:** har write action ke liye popup. Timeout settings mein.
 - **History:** pichla 1 ghanta, 1 din, ya sab delete.
-- **Settings:** DeepSeek, Gemini, ElevenLabs models aur voice.
+- **Settings:** Chat model (Auto ya khud chunein), Gemini image model, ElevenLabs voice model aur voice.
+- **Auto model:** Chat model "Auto" ho to DeepSeek har message ko `general`, `code`, ya `reasoning` mein parakh kar model chunta hai (`agent/router.py`).
+- **Voice:** `/voice <text>` MP3 banata hai, jo chat mein link ke taur par sun aur download ho sakta hai.
+- **Voice clone:** Settings mein "Voice clone" form. Consent checkbox zaroori hai, aur sirf apni awaaz ya likhit ijazat wali awaaz ke liye.
 - **Audit log:** har important action ka record.
 - **Browser:** `/browse <url>` page ka text nikalta hai (read-only). `/browse <url> --shot` screenshot bhi leta hai, jo `/api/screenshots/<name>` par milta hai. `/act <url> | click | <selector>` ya `/act <url> | type | <selector> | <text>` se action hota hai. Kai steps ke liye `;;` se alag karein. Ek approval poore batch par lagti hai. Password fields par agent kaam nahi karta, login aap khud karein.
 - **Scheduled tasks:** `/schedule add <minutes> <command>`, `/schedule list`, `/schedule remove <id>`. Ya Scheduled tasks tab se. Sirf read-only kaam schedule hote hain.
@@ -40,6 +43,7 @@ playwright install chromium
 - VPS par alag user banaein jiske paas sirf zaroori permissions hon.
 - Replit free plan par app sleep ho sakti hai, is liye lamba kaam VPS par chalana behtar hai.
 - Repo ko private rakhein, aur data/ aur .env kabhi commit na karein.
+- Replit par data (SQLite file) persist nahi hota. Data VPS par rakhna hai, to database ko VPS se connect karne ka kaam baaki hai (abhi SQLite local file hai).
 
 ## Abhi kya adhoora hai
 

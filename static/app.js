@@ -413,7 +413,7 @@ $("#settings-form").addEventListener("submit", async (e) => {
   const form = e.target;
   const body = {
     profile_name: form.profile_name.value,
-    deepseek_model: form.deepseek_model.value,
+    chat_model: form.chat_model.value,
     gemini_model: form.gemini_model.value,
     elevenlabs_model: form.elevenlabs_model.value,
     elevenlabs_voice_id: form.elevenlabs_voice_id.value,
@@ -461,6 +461,23 @@ $("#task-form").addEventListener("submit", async (e) => {
     alert(err.message);
   }
   loadTasks();
+});
+
+// ---------- voice clone ----------
+$("#clone-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const data = new FormData();
+  data.append("name", form.name.value);
+  data.append("consent", form.consent.checked ? "yes" : "no");
+  for (const f of form.samples.files) data.append("samples", f);
+  try {
+    const res = await api("/api/voice/clone", { method: "POST", body: data }).then((r) => r.json());
+    $("#clone-msg").textContent = `Clone ho gaya. Voice ID: ${res.voice_id}. Settings mein select karein.`;
+    form.reset();
+  } catch (err) {
+    $("#clone-msg").textContent = `Error: ${err.message}`;
+  }
 });
 
 // ---------- audit ----------

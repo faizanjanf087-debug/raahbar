@@ -150,6 +150,44 @@ def audit_view():
     return jsonify(audit.tail(100))
 
 
+@app.route("/api/voice/generate", methods=["POST"])
+@login_required
+def voice_generate():
+    from agent import voice
+    try:
+        name = voice.generate((request.json or {}).get("text", ""))
+    except (ValueError, RuntimeError) as exc:
+        return jsonify({"error": str(exc)}), 400
+    return jsonify({"file": name, "url": f"/api/audio/{name}"})
+
+
+@app.route("/api/audio/<name>")
+@login_required
+def audio_file(name):
+    from flask import send_from_directory
+    from agent import voice
+    if "/" in name or ".." in name:
+        return jsonify({"error": "galat naam"}), 400
+    download = request.args.get("download") == "1"
+    return send_from_directory(voice.AUDIO_DIR, name, as_attachment=download)
+
+
+@app.route("/api/voice/clone", methods=["POST"])
+@login_required
+def voice_clone():
+    from agent import voice
+    name = request.form.get("name", "").strip()
+    consent = request.form.get("consent") == "yes"
+    samples = []
+    for f in request.files.getlist("samples"):
+        samples.append((f.filename or "sample.mp3", f.read(), f.mimetype or "audio/mpeg"))
+    try:
+        voice_id = voice.clone(name, samples, consent)
+    except (ValueError, PermissionError, RuntimeError) as exc:
+        return jsonify({"error": str(exc)}), 400
+    return jsonify({"voice_id": voice_id})
+
+
 @app.route("/api/screenshots/<name>")
 @login_required
 def screenshot(name):

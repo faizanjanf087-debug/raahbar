@@ -94,8 +94,9 @@
         <h3>Settings</h3>
         <form id="settings-form" class="form">
           <label>Profile naam <input name="profile_name"></label>
-          <label>DeepSeek model
-            <select name="deepseek_model">
+          <label>Chat model
+            <select name="chat_model">
+              <option value="auto">Auto (DeepSeek khud chune)</option>
               {% for m in deepseek_models %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
             </select>
           </label>
@@ -114,6 +115,16 @@
           <label><input type="checkbox" name="live_auto_speak"> Jawab bolkar sunayein</label>
           <button type="submit">Save</button>
           <p id="settings-msg" class="hint"></p>
+        </form>
+
+        <h4>Voice clone</h4>
+        <form id="clone-form" class="form">
+          <input name="name" placeholder="Voice ka naam" required>
+          <input name="samples" type="file" accept="audio/*" multiple required>
+          <label class="hint"><input type="checkbox" name="consent" required>
+            Main tasdeeq karta/karti hoon ke ye awaaz meri apni hai, ya us shakhs ki hai jis ne likhit ijazat di hai.</label>
+          <button type="submit">Clone karein</button>
+          <p id="clone-msg" class="hint"></p>
         </form>
       </section>
 

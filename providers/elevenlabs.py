@@ -31,6 +31,19 @@ def tts(text, voice_id, model_id):
     return response.content
 
 
+def add_voice(name, files):
+    """Instant voice clone. files: [(filename, bytes, mime_type), ...]. Consent route par check hota hai."""
+    response = requests.post(
+        f"{BASE}/voices/add",
+        headers=_headers(),
+        data={"name": name},
+        files=[("files", (fn, data, mt)) for fn, data, mt in files],
+        timeout=300,
+    )
+    response.raise_for_status()
+    return response.json()["voice_id"]
+
+
 def stt(audio_bytes, filename, mime_type):
     response = requests.post(
         f"{BASE}/speech-to-text",

@@ -1,4 +1,4 @@
-from agent import browser
+from agent import browser, router, voice
 from memory import store
 from providers import deepseek
 from security import approvals, audit, policy
@@ -43,6 +43,10 @@ def handle(user_text):
 
     if text.startswith("/act "):
         return _request_browser_action(text)
+
+    if text.startswith("/voice "):
+        name = voice.generate(text[len("/voice "):])
+        return f"Voice tayyar hai: /api/audio/{name}"
 
     if text.startswith("/schedule"):
         return _schedule_command(text)
@@ -140,4 +144,6 @@ def _ask_model(text, settings):
         role = "assistant" if item["role"] == "assistant" else "user"
         messages.append({"role": role, "content": item["content"]})
     messages.append({"role": "user", "content": text})
-    return deepseek.chat(messages, settings["deepseek_model"])
+    model = router.pick(text, settings["chat_model"])
+    audit.log("model_selected", model=model, mode=settings["chat_model"])
+    return deepseek.chat(messages, model)
