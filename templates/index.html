@@ -11,7 +11,10 @@
 <body>
   <div class="layout">
     <aside class="sidebar">
-      <h2>Agent</h2>
+      <div class="brand">
+        <h2>Raahbar</h2>
+        <button id="collapse-btn" type="button" title="Sidebar chhupayein">☰</button>
+      </div>
       <nav>
         <button data-tab="chat" class="active">Chat</button>
         <button data-tab="live">Live Call</button>
@@ -149,6 +152,8 @@
     </main>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
   <script src="/static/app.js"></script>
 </body>
 </html>

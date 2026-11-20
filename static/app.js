@@ -21,14 +21,28 @@ async function api(path, options = {}) {
 const getJSON = (path) => api(path).then((r) => r.json());
 const postJSON = (path, body) => api(path, { method: "POST", body }).then((r) => r.json());
 
+function renderInto(div, role, text) {
+  if (role === "assistant" && window.marked && window.DOMPurify) {
+    div.innerHTML = DOMPurify.sanitize(marked.parse(text || ""));
+  } else {
+    div.textContent = text;
+  }
+}
+
 function addMessage(role, text) {
   const log = $("#chat-log");
   const div = document.createElement("div");
   div.className = `msg ${role}`;
-  div.textContent = text;
+  renderInto(div, role, text);
   log.appendChild(div);
   log.scrollTop = log.scrollHeight;
+  return div;
 }
+
+// Sidebar ko chhupane aur dikhane ka toggle
+$("#collapse-btn").addEventListener("click", () => {
+  document.querySelector(".sidebar").classList.toggle("collapsed");
+});
 
 // ---------- tabs ----------
 document.querySelectorAll(".sidebar nav button").forEach((btn) => {
@@ -55,11 +69,16 @@ async function sendChat(text) {
   if (!text.trim()) return;
   addMessage("user", text);
   $("#chat-text").value = "";
+  const typing = addMessage("assistant", "");
+  typing.classList.add("typing");
+  typing.innerHTML = "<span></span><span></span><span></span>";
   try {
     const data = await postJSON("/api/chat", { message: text });
+    typing.remove();
     addMessage("assistant", data.reply);
     return data.reply;
   } catch (e) {
+    typing.remove();
     addMessage("assistant", `Error: ${e.message}`);
   }
 }

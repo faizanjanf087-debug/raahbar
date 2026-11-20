@@ -12,6 +12,21 @@ Flask ka personal AI assistant. Chat, live call, VPS status aur approvals.
 
 Replit par: Secrets mein same keys daalein, aur Run dabaayein.
 
+## Database (Neon Postgres)
+
+1. neon.tech par free project banayein, aur connection string copy karein (postgresql://...).
+2. Replit Secrets (ya .env) mein `DATABASE_URL` ke naam se daalein.
+3. App chalayein. Table apne aap ban jati hai (`messages`).
+
+Agar `DATABASE_URL` khali ho, to local SQLite (`data/memory.db`) use hogi.
+
+## UI
+
+- Sidebar ☰ button se chhupaaya aur dikhaya ja sakta hai.
+- Jawab Markdown mein dikhte hain (headings, lists, code, tables).
+- Jawab aane se pehle typing dots dikhte hain.
+- Animations ko system ki "reduced motion" setting ke hisab se band kiya ja sakta hai.
+
 ## Features
 
 - **Chat:** DeepSeek se jawab. `@` se pichli baat mention karein. `+` se image, audio ya video upload karein.
